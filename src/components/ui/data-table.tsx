@@ -40,6 +40,7 @@ import {
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { FileQuestion } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -247,7 +248,7 @@ export function DataTable<TData, TValue>({
       {enablePagination && (
         <div className="flex items-center justify-between space-x-2 py-4">
           <div className="flex items-center space-x-2">
-            <p className="text-sm">Rows per page:</p>
+            <p className="text-sm hidden sm:block">Rows per page:</p>
             <Select
               value={pageSize.toString()}
               onValueChange={(value) => setPageSize(parseInt(value))}
@@ -272,13 +273,14 @@ export function DataTable<TData, TValue>({
             <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
-                size="sm"
+                size="icon"
+                className="h-8 w-8"
                 onClick={() =>
                   setPageIndex(Math.max(1, parseInt(pageIndex) - 1).toString())
                 }
                 disabled={parseInt(pageIndex) <= 1}
               >
-                Previous
+                <ChevronLeft className="h-4 w-4" />
               </Button>
               <Select value={pageIndex} onValueChange={setPageIndex}>
                 <SelectTrigger className="h-8 w-[70px]">
@@ -296,7 +298,8 @@ export function DataTable<TData, TValue>({
               </Select>
               <Button
                 variant="outline"
-                size="sm"
+                size="icon"
+                className="h-8 w-8"
                 onClick={() =>
                   setPageIndex(
                     Math.min(totalPages, parseInt(pageIndex) + 1).toString(),
@@ -304,7 +307,7 @@ export function DataTable<TData, TValue>({
                 }
                 disabled={parseInt(pageIndex) >= totalPages}
               >
-                Next
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
