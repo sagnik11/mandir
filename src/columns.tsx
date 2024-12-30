@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
+import { EditUserDialog } from "./components/edit-user-dialog";
 
 export interface DataFormat {
   id: string;
@@ -24,11 +25,12 @@ export interface DataFormat {
 
 const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-  const token = row.original;
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const user = row.original;
 
   const handleDelete = () => {
     // Handle delete action
-    console.log("Deleting token:", token);
+    console.log("Deleting user:", user);
     setShowDeleteAlert(false);
   };
 
@@ -39,6 +41,7 @@ const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           className="text-blue-500 hover:text-blue-600"
+          onClick={() => setShowEditDialog(true)}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -71,7 +74,7 @@ const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {token.name}'s data. This action
+              This will permanently delete {user.name}'s data. This action
               cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -86,6 +89,12 @@ const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <EditUserDialog
+        user={user}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+      />
     </>
   );
 };
