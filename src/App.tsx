@@ -8,7 +8,13 @@ import { AddUserDialog } from "./components/add-user-dialog";
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState<DataFormat[]>([]);
+  const [data, setData] = useState<DataFormat[]>([
+    { id: "1", name: "Alice Johnson", amount: 1000 },
+    { id: "2", name: "Bob Smith", amount: 1500 },
+    { id: "3", name: "Charlie Brown", amount: 750 },
+    { id: "4", name: "Diana Ross", amount: 2000 },
+    { id: "5", name: "Ethan Hunt", amount: 1250 },
+  ]);
 
   return (
     <>

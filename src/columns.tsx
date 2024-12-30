@@ -15,7 +15,7 @@ const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
   const token = row.original;
   console.log(token);
   return (
-    <div className="flex justify-end gap-2">
+    <div className="flex justify-start gap-2">
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
@@ -51,7 +51,7 @@ const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
 export const columns: ColumnDef<DataFormat>[] = [
   {
     accessorKey: "id",
-    header: "Sr No.",
+    header: () => <div className="text-left font-medium">Sr No.</div>,
     cell: ({ row }) => {
       return <div className="text-left">{row.index + 1}</div>;
     },
@@ -61,6 +61,7 @@ export const columns: ColumnDef<DataFormat>[] = [
     header: ({ column }) => (
       <Button
         variant="ghost"
+        className="text-left p-0 hover:bg-transparent font-medium"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Name
@@ -70,7 +71,7 @@ export const columns: ColumnDef<DataFormat>[] = [
     cell: ({ row }) => {
       const name = row.getValue("name") as string;
       return (
-        <div className="flex items-center">
+        <div className="text-left">
           <span>{name}</span>
         </div>
       );
@@ -81,10 +82,11 @@ export const columns: ColumnDef<DataFormat>[] = [
     header: ({ column }) => (
       <Button
         variant="ghost"
+        className="text-left p-0 hover:bg-transparent font-medium"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Amount (₹)
-        <ArrowUpDown className="ml-2 h-4 w-4 text-left" />
+        <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
     cell: ({ row }) => {
@@ -94,6 +96,7 @@ export const columns: ColumnDef<DataFormat>[] = [
   },
   {
     id: "actions",
+    header: () => <div className="text-left font-medium">Actions</div>,
     cell: ({ row }) => <ActionCell row={row} />,
   },
 ];

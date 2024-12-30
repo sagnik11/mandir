@@ -19,7 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Plus, Upload, Camera } from "lucide-react";
+import { Plus, Upload, Camera, X } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -36,6 +36,7 @@ const formSchema = z.object({
 
 export function AddUserDialog() {
   const [isOpen, setIsOpen] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,14 +55,32 @@ export function AddUserDialog() {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Handle file upload
-      console.log("File uploaded:", file);
+      if (file.type.startsWith("image/")) {
+        // Handle image file
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Handle Excel/CSV file
+        console.log("Excel/CSV file uploaded:", file);
+      }
     }
   };
 
   const handleCameraCapture = () => {
     // Handle camera capture
     console.log("Camera capture triggered");
+  };
+
+  const handleProcessImage = () => {
+    // Handle image processing
+    console.log("Processing image...");
+  };
+
+  const clearImagePreview = () => {
+    setImagePreview(null);
   };
 
   return (
@@ -128,42 +147,69 @@ export function AddUserDialog() {
           </TabsContent>
           <TabsContent value="upload" className="space-y-4">
             <div className="grid gap-4">
-              <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 space-y-2">
-                <Input
-                  type="file"
-                  accept=".csv,.xlsx,.xls"
-                  className="hidden"
-                  id="file-upload"
-                  onChange={handleFileUpload}
-                />
-                <label
-                  htmlFor="file-upload"
-                  className="flex flex-col items-center cursor-pointer space-y-2"
-                >
-                  <Upload className="h-8 w-8 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    Upload Excel or CSV file
-                  </span>
-                </label>
-              </div>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
+              {imagePreview ? (
+                <div className="relative">
+                  <div className="absolute -top-2 -right-2 z-10">
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="h-6 w-6 rounded-full"
+                      onClick={clearImagePreview}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="relative aspect-video rounded-lg overflow-hidden">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <Button className="w-full mt-4" onClick={handleProcessImage}>
+                    Process Image
+                  </Button>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or
-                  </span>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleCameraCapture}
-              >
-                <Camera className="mr-2 h-4 w-4" />
-                Take a Picture
-              </Button>
+              ) : (
+                <>
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 space-y-2">
+                    <Input
+                      type="file"
+                      accept=".csv,.xlsx,.xls,image/*"
+                      className="hidden"
+                      id="file-upload"
+                      onChange={handleFileUpload}
+                    />
+                    <label
+                      htmlFor="file-upload"
+                      className="flex flex-col items-center cursor-pointer space-y-2"
+                    >
+                      <Upload className="h-8 w-8 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Upload Excel, CSV, or Image file
+                      </span>
+                    </label>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleCameraCapture}
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+                    Take a Picture
+                  </Button>
+                </>
+              )}
             </div>
           </TabsContent>
         </Tabs>
