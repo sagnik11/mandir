@@ -39,8 +39,7 @@ import {
 } from "./select";
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { FileQuestion } from "lucide-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { FileQuestion, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

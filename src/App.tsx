@@ -1,10 +1,10 @@
 import "./App.css";
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
-import { Users, Plus } from "lucide-react";
+import { Users } from "lucide-react";
 import { useState } from "react";
 import { columns, DataFormat } from "./columns";
 import { BrandingBadge } from "./components/worqhat-badge";
+import { AddUserDialog } from "./components/add-user-dialog";
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,10 +17,7 @@ function App() {
       </div>
       <div className="w-full">
         <div className="flex justify-end items-center">
-          <Button variant="outline" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Add User Details
-          </Button>
+          <AddUserDialog />
         </div>
 
         <DataTable
