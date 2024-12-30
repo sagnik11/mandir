@@ -1,5 +1,6 @@
-const API_KEY = process.env.NEXT_PUBLIC_WORQHAT_API_KEY;
-const COLLECTION_NAME = "mandir_users";
+const COLLECTION_NAME = "mandir";
+const API_KEY = "sk-02e44d2ccb164c738a6c4a65dbf75e89";
+const BASE_URL = "https://api-staging.worqhat.com/api/collections/data";
 
 export interface UserData {
   id?: string;
@@ -9,23 +10,20 @@ export interface UserData {
 
 export async function addUser(data: Omit<UserData, "id">) {
   try {
-    const response = await fetch(
-      "https://api.worqhat.com/api/collections/data/add",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          collection: COLLECTION_NAME,
-          data: {
-            name: data.name,
-            amount: Number(data.amount),
-          },
-        }),
+    const response = await fetch(`${BASE_URL}/add`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        collection: COLLECTION_NAME,
+        data: {
+          name: data.name,
+          amount: Number(data.amount),
+        },
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);
@@ -41,24 +39,21 @@ export async function addUser(data: Omit<UserData, "id">) {
 
 export async function updateUser(id: string, data: Partial<UserData>) {
   try {
-    const response = await fetch(
-      `https://api.worqhat.com/api/collections/data/update`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          collection: COLLECTION_NAME,
-          id: id,
-          data: {
-            name: data.name,
-            amount: data.amount ? Number(data.amount) : undefined,
-          },
-        }),
+    const response = await fetch(`${BASE_URL}/update`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        collection: COLLECTION_NAME,
+        docId: id,
+        data: {
+          name: data.name,
+          amount: data.amount ? Number(data.amount) : undefined,
+        },
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);
@@ -74,20 +69,17 @@ export async function updateUser(id: string, data: Partial<UserData>) {
 
 export async function deleteUser(id: string) {
   try {
-    const response = await fetch(
-      `https://api.worqhat.com/api/collections/data/delete`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          collection: COLLECTION_NAME,
-          id: id,
-        }),
+    const response = await fetch(`${BASE_URL}/delete`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        collection: COLLECTION_NAME,
+        docId: id,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);
@@ -103,19 +95,17 @@ export async function deleteUser(id: string) {
 
 export async function getAllUsers() {
   try {
-    const response = await fetch(
-      `https://api.worqhat.com/api/collections/data/list`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          collection: COLLECTION_NAME,
-        }),
+    const response = await fetch(`${BASE_URL}/fetch/all`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        collection: COLLECTION_NAME,
+        format: "JSON",
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);

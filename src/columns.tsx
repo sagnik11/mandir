@@ -17,7 +17,7 @@ import {
 import { useState } from "react";
 import { EditUserDialog } from "./components/edit-user-dialog";
 import { deleteUser } from "@/lib/api";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 export interface DataFormat {
   id: string;
@@ -29,23 +29,15 @@ const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { toast } = useToast();
   const user = row.original;
 
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
       await deleteUser(user.id);
-      toast({
-        title: "Success",
-        description: "User deleted successfully",
-      });
+      toast.success("User deleted successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete user. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete user. Please try again.");
       console.error("Error deleting user:", error);
     } finally {
       setIsDeleting(false);
