@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ColumnDef,
@@ -12,7 +12,7 @@ import {
   getFilteredRowModel,
   ColumnFiltersState,
   FilterFn,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -21,19 +21,25 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
-import { Button } from './button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
-import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { FileQuestion } from 'lucide-react';
+import { Button } from "./button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./select";
+import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { FileQuestion } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -55,22 +61,22 @@ export function DataTable<TData, TValue>({
   data,
   isLoading = false,
   emptyIcon = <FileQuestion className="h-8 w-8 text-muted-foreground" />,
-  emptyText = 'No results found',
+  emptyText = "No results found",
   enableSorting = true,
   enablePagination = true,
   enableRowSelection = false,
   enableFiltering = false,
   filterableColumns = [],
-  filterPlaceholder = 'Filter...',
+  filterPlaceholder = "Filter...",
   enableColumnVisibilitySelection = false,
 }: DataTableProps<TData, TValue>) {
   const [pageSize, setPageSize] = useState(10);
-  const [pageIndex, setPageIndex] = useState('1');
+  const [pageIndex, setPageIndex] = useState("1");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, _setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fuzzyFilter: FilterFn<any> = (row, _columnId, value, _addMeta) => {
@@ -85,7 +91,9 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns,
-    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
+    getPaginationRowModel: enablePagination
+      ? getPaginationRowModel()
+      : undefined,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
     onSortingChange: enableSorting ? setSorting : undefined,
@@ -113,7 +121,7 @@ export function DataTable<TData, TValue>({
     onPaginationChange: enablePagination
       ? (updater) => {
           const newPagination =
-            typeof updater === 'function'
+            typeof updater === "function"
               ? updater({
                   pageSize,
                   pageIndex: parseInt(pageIndex) - 1,
@@ -134,7 +142,7 @@ export function DataTable<TData, TValue>({
         {enableFiltering && filterableColumns.length > 0 && (
           <Input
             placeholder={filterPlaceholder}
-            value={globalFilter ?? ''}
+            value={globalFilter ?? ""}
             onChange={(event) => {
               setGlobalFilter(event.target.value);
             }}
@@ -158,7 +166,9 @@ export function DataTable<TData, TValue>({
                       key={column.id}
                       className="capitalize"
                       checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
@@ -179,7 +189,10 @@ export function DataTable<TData, TValue>({
                     <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   );
                 })}
@@ -199,18 +212,28 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={enableRowSelection && row.getIsSelected() ? 'selected' : undefined}
+                  data-state={
+                    enableRowSelection && row.getIsSelected()
+                      ? "selected"
+                      : undefined
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-[400px] text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-[400px] text-center"
+                >
                   <div className="flex flex-col items-center justify-center gap-2">
                     {emptyIcon}
                     <p className="text-muted-foreground">{emptyText}</p>
@@ -250,7 +273,9 @@ export function DataTable<TData, TValue>({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPageIndex(Math.max(1, parseInt(pageIndex) - 1).toString())}
+                onClick={() =>
+                  setPageIndex(Math.max(1, parseInt(pageIndex) - 1).toString())
+                }
                 disabled={parseInt(pageIndex) <= 1}
               >
                 Previous
@@ -260,18 +285,22 @@ export function DataTable<TData, TValue>({
                   <SelectValue>{pageIndex}</SelectValue>
                 </SelectTrigger>
                 <SelectContent side="top">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <SelectItem key={page} value={page.toString()}>
-                      {page}
-                    </SelectItem>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <SelectItem key={page} value={page.toString()}>
+                        {page}
+                      </SelectItem>
+                    ),
+                  )}
                 </SelectContent>
               </Select>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  setPageIndex(Math.min(totalPages, parseInt(pageIndex) + 1).toString())
+                  setPageIndex(
+                    Math.min(totalPages, parseInt(pageIndex) + 1).toString(),
+                  )
                 }
                 disabled={parseInt(pageIndex) >= totalPages}
               >
