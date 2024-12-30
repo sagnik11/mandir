@@ -45,6 +45,7 @@ export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [processingStep, setProcessingStep] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -151,22 +152,93 @@ export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
   };
 
   async function handleProcessImage() {
-    if (imagePreview) {
-      try {
-        setIsSubmitting(true);
-        await addUser({
-          name: "Anonymous",
-          amount: 0,
-        });
-        toast.success("User added successfully");
-        setIsOpen(false);
-        onSuccess?.();
-      } catch (error) {
-        toast.error("Failed to add user. Please try again.");
-        console.error("Error adding user:", error);
-      } finally {
-        setIsSubmitting(false);
+    if (!imagePreview) return;
+
+    try {
+      setIsSubmitting(true);
+      setProcessingStep("Converting image...");
+
+      // Convert base64 to blob
+      const base64Response = await fetch(imagePreview);
+      const blob = await base64Response.blob();
+
+      // Create FormData and append necessary data
+      const formData = new FormData();
+      formData.append(
+        "question",
+        "Extract the following information from the image in JSON format with these fields only: name (string) and amount (number). Return the data as an array of objects.",
+      );
+      formData.append(
+        "training_data",
+        'You are an AI assistant that extracts name and amount information from images. Always return data in this format: [{"name": "string", "amount": number}]',
+      );
+      formData.append("files", blob, "image.jpg");
+      formData.append("model", "aicon-v4-large-160824");
+      formData.append("stream_data", "false");
+      formData.append("response_type", "json");
+
+      setProcessingStep("Analyzing image...");
+      const response = await fetch(
+        "https://api-staging.worqhat.com/api/ai/content/v4",
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer sk-02e44d2ccb164c738a6c4a65dbf75e89",
+          },
+          body: formData,
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to process image");
       }
+
+      const result = await response.json();
+      console.log("Extracted data:", result.content);
+
+      setProcessingStep("Processing extracted data...");
+      let extractedData;
+      try {
+        // Try to parse the response as JSON if it's a string
+        extractedData =
+          typeof result.content === "string"
+            ? JSON.parse(result.content)
+            : result.content;
+      } catch (e) {
+        console.error("Error parsing JSON:", e);
+        throw new Error("Invalid response format");
+      }
+
+      if (!Array.isArray(extractedData)) {
+        throw new Error("Invalid data format");
+      }
+
+      setProcessingStep("Adding users to database...");
+      // Add each user to the database
+      for (const userData of extractedData) {
+        if (
+          typeof userData.name === "string" &&
+          typeof userData.amount === "number"
+        ) {
+          await addUser({
+            name: userData.name,
+            amount: userData.amount,
+          });
+        }
+      }
+
+      toast.success(`Successfully added ${extractedData.length} users`);
+      setIsOpen(false);
+      setImagePreview(null);
+      onSuccess?.();
+    } catch (error) {
+      console.error("Error processing image:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to process image",
+      );
+    } finally {
+      setIsSubmitting(false);
+      setProcessingStep("");
     }
   }
 
@@ -269,8 +341,12 @@ export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
                       className="object-cover w-full h-full"
                     />
                   </div>
-                  <Button className="w-full mt-4" onClick={handleProcessImage}>
-                    Process Image
+                  <Button
+                    className="w-full mt-4"
+                    onClick={handleProcessImage}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? processingStep : "Process Image"}
                   </Button>
                 </div>
               ) : (
