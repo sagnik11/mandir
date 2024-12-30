@@ -38,12 +38,14 @@ interface EditUserDialogProps {
   user: DataFormat;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 export function EditUserDialog({
   user,
   open,
   onOpenChange,
+  onSuccess,
 }: EditUserDialogProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,13 +60,14 @@ export function EditUserDialog({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsSubmitting(true);
-      await updateUser(user.id, {
+      await updateUser(user.docId, {
         name: values.name,
         amount: Number(values.amount),
       });
       toast.success("User updated successfully");
       onOpenChange(false);
       form.reset();
+      onSuccess?.();
     } catch (error) {
       toast.error("Failed to update user. Please try again.");
       console.error("Error updating user:", error);

@@ -38,6 +38,7 @@ export async function addUser(data: Omit<UserData, "id">) {
 }
 
 export async function updateUser(id: string, data: Partial<UserData>) {
+  console.log("Update User:", id, data);
   try {
     const response = await fetch(`${BASE_URL}/update`, {
       method: "POST",
@@ -68,6 +69,7 @@ export async function updateUser(id: string, data: Partial<UserData>) {
 }
 
 export async function deleteUser(id: string) {
+  console.log("Delete User:", id);
   try {
     const response = await fetch(`${BASE_URL}/delete`, {
       method: "POST",
@@ -112,6 +114,7 @@ export async function getAllUsers() {
     }
 
     const result = await response.json();
+    console.log("Fetched users:", result.data);
     return result.data;
   } catch (error) {
     console.error("Error fetching users:", error);

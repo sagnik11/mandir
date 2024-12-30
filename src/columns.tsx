@@ -20,12 +20,18 @@ import { deleteUser } from "@/lib/api";
 import { toast } from "sonner";
 
 export interface DataFormat {
+  docId: string;
   id: string;
   name: string;
   amount: number;
 }
 
-const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
+interface ActionCellProps {
+  row: Row<DataFormat>;
+  onDataChange?: () => void;
+}
+
+const ActionCell = ({ row, onDataChange }: ActionCellProps) => {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -34,8 +40,9 @@ const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      await deleteUser(user.id);
+      await deleteUser(user.docId);
       toast.success("User deleted successfully");
+      onDataChange?.();
     } catch (error) {
       toast.error("Failed to delete user. Please try again.");
       console.error("Error deleting user:", error);
@@ -106,6 +113,7 @@ const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
         user={user}
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
+        onSuccess={onDataChange}
       />
     </>
   );
@@ -159,7 +167,9 @@ export const columns: ColumnDef<DataFormat>[] = [
   },
   {
     id: "actions",
-    header: () => <div className="text-left font-medium">Actions</div>,
-    cell: ({ row }) => <ActionCell row={row} />,
+    header: () => <div className="text-left font-medium"> </div>,
+    cell: ({ row, table }) => (
+      <ActionCell row={row} onDataChange={table.options.meta?.onDataChange} />
+    ),
   },
 ];

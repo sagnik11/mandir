@@ -54,6 +54,7 @@ interface DataTableProps<TData, TValue> {
   filterableColumns?: string[];
   filterPlaceholder?: string;
   enableColumnVisibilitySelection?: boolean;
+  onDataChange?: () => Promise<void>;
 }
 
 export function DataTable<TData, TValue>({

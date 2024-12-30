@@ -36,7 +36,11 @@ const formSchema = z.object({
   }),
 });
 
-export function AddUserDialog() {
+interface AddUserDialogProps {
+  onSuccess?: () => void;
+}
+
+export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,6 +62,7 @@ export function AddUserDialog() {
       toast.success("User added successfully");
       setIsOpen(false);
       form.reset();
+      onSuccess?.();
     } catch (error) {
       toast.error("Failed to add user. Please try again.");
       console.error("Error adding user:", error);
