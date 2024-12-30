@@ -19,6 +19,12 @@ import { EditUserDialog } from "./components/edit-user-dialog";
 import { deleteUser } from "@/lib/api";
 import { toast } from "sonner";
 
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends unknown> {
+    onDataChange?: () => void;
+  }
+}
+
 export interface DataFormat {
   docId: string;
   id: string;
@@ -32,90 +38,90 @@ interface ActionCellProps {
 }
 
 const ActionCell = ({ row, onDataChange }: ActionCellProps) => {
-  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const user = row.original;
 
   const handleDelete = async () => {
     try {
-      setIsDeleting(true);
-      await deleteUser(user.docId);
+      await deleteUser(row.original.docId);
       toast.success("User deleted successfully");
       onDataChange?.();
     } catch (error) {
-      toast.error("Failed to delete user. Please try again.");
+      toast.error("Failed to delete user");
       console.error("Error deleting user:", error);
     } finally {
-      setIsDeleting(false);
-      setShowDeleteAlert(false);
+      setShowDeleteDialog(false);
     }
   };
 
   return (
-    <>
-      <div className="flex justify-start gap-2">
-        <motion.button
-          whileHover={{ scale: 1.1 }}
+    <div className="flex items-center gap-2">
+      <Button
+        variant="ghost"
+        className="h-8 w-8 p-0 text-blue-500 hover:text-blue-600"
+        onClick={() => setShowEditDialog(true)}
+      >
+        <span className="sr-only">Edit</span>
+        <motion.div
+          whileHover={{ scale: 1.2 }}
           whileTap={{ scale: 0.9 }}
-          className="text-blue-500 hover:text-blue-600"
-          onClick={() => setShowEditDialog(true)}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
             fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
             stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
+            className="w-4 h-4"
           >
-            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-            <path d="m15 5 4 4" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+            />
           </svg>
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.1 }}
+        </motion.div>
+      </Button>
+
+      <Button
+        variant="ghost"
+        className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+        onClick={() => setShowDeleteDialog(true)}
+      >
+        <span className="sr-only">Delete</span>
+        <motion.div
+          whileHover={{ scale: 1.2 }}
           whileTap={{ scale: 0.9 }}
-          className="text-destructive hover:text-destructive/90"
-          onClick={() => setShowDeleteAlert(true)}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
           <Trash2 className="h-4 w-4" />
-        </motion.button>
-      </div>
+        </motion.div>
+      </Button>
 
-      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {user.name}'s data. This action
-              cannot be undone.
+              This action cannot be undone. This will permanently delete the
+              user's data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <EditUserDialog
-        user={user}
+        user={row.original}
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
         onSuccess={onDataChange}
       />
-    </>
+    </div>
   );
 };
 
