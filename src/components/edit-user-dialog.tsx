@@ -21,6 +21,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { DataFormat } from "../columns";
+import { updateUser } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -50,11 +53,32 @@ export function EditUserDialog({
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Handle form submission
-    console.log("Updating user:", { id: user.id, ...values });
-    onOpenChange(false);
-    form.reset();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      setIsSubmitting(true);
+      await updateUser(user.id, {
+        name: values.name,
+        amount: Number(values.amount),
+      });
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      });
+      onOpenChange(false);
+      form.reset();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update user. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error updating user:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -98,8 +122,8 @@ export function EditUserDialog({
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Save Changes
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </form>
         </Form>

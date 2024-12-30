@@ -24,6 +24,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import React, { useState } from "react";
+import { addUser } from "@/lib/api";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -37,6 +39,7 @@ const formSchema = z.object({
 export function AddUserDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,11 +48,22 @@ export function AddUserDialog() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Handle form submission
-    console.log(values);
-    setIsOpen(false);
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      setIsSubmitting(true);
+      await addUser({
+        name: values.name,
+        amount: Number(values.amount),
+      });
+      toast.success("User added successfully");
+      setIsOpen(false);
+      form.reset();
+    } catch (error) {
+      toast.error("Failed to add user. Please try again.");
+      console.error("Error adding user:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,8 +153,12 @@ export function AddUserDialog() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">
-                  Add User
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Adding..." : "Add User"}
                 </Button>
               </form>
             </Form>

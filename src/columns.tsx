@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { EditUserDialog } from "./components/edit-user-dialog";
+import { deleteUser } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
 
 export interface DataFormat {
   id: string;
@@ -26,12 +28,29 @@ export interface DataFormat {
 const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { toast } = useToast();
   const user = row.original;
 
-  const handleDelete = () => {
-    // Handle delete action
-    console.log("Deleting user:", user);
-    setShowDeleteAlert(false);
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteUser(user.id);
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete user. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error deleting user:", error);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteAlert(false);
+    }
   };
 
   return (
@@ -83,8 +102,9 @@ const ActionCell = ({ row }: { row: Row<DataFormat> }) => {
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
             >
-              Delete
+              {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
