@@ -21,7 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { DataFormat } from "../columns";
-import { updateUser } from "@/lib/api";
+import { useUpdateUser } from "@/hooks/use-users";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -38,14 +38,12 @@ interface EditUserDialogProps {
   user: DataFormat;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
 }
 
 export function EditUserDialog({
   user,
   open,
   onOpenChange,
-  onSuccess,
 }: EditUserDialogProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,19 +53,23 @@ export function EditUserDialog({
     },
   });
 
+  const updateUserMutation = useUpdateUser();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsSubmitting(true);
-      await updateUser(user.docId, {
-        name: values.name,
-        amount: Number(values.amount),
+      await updateUserMutation.mutateAsync({
+        id: user.docId,
+        data: {
+          name: values.name,
+          amount: Number(values.amount),
+        },
       });
       toast.success("User updated successfully");
       onOpenChange(false);
       form.reset();
-      onSuccess?.();
     } catch (error) {
       toast.error("Failed to update user. Please try again.");
       console.error("Error updating user:", error);

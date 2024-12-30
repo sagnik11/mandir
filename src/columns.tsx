@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { EditUserDialog } from "./components/edit-user-dialog";
-import { deleteUser } from "@/lib/api";
+import { useDeleteUser } from "./hooks/use-users";
 import { toast } from "sonner";
 
 declare module "@tanstack/react-table" {
@@ -34,18 +34,17 @@ export interface DataFormat {
 
 interface ActionCellProps {
   row: Row<DataFormat>;
-  onDataChange?: () => void;
 }
 
-const ActionCell = ({ row, onDataChange }: ActionCellProps) => {
+const ActionCell = ({ row }: ActionCellProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const deleteUserMutation = useDeleteUser();
 
   const handleDelete = async () => {
     try {
-      await deleteUser(row.original.docId);
+      await deleteUserMutation.mutateAsync(row.original.docId);
       toast.success("User deleted successfully");
-      onDataChange?.();
     } catch (error) {
       toast.error("Failed to delete user");
       console.error("Error deleting user:", error);
@@ -119,7 +118,6 @@ const ActionCell = ({ row, onDataChange }: ActionCellProps) => {
         user={row.original}
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
-        onSuccess={onDataChange}
       />
     </div>
   );
@@ -174,8 +172,6 @@ export const columns: ColumnDef<DataFormat>[] = [
   {
     id: "actions",
     header: () => <div className="text-left font-medium"> </div>,
-    cell: ({ row, table }) => (
-      <ActionCell row={row} onDataChange={table.options.meta?.onDataChange} />
-    ),
+    cell: ({ row }) => <ActionCell row={row} />,
   },
 ];

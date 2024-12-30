@@ -24,7 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import React, { useState, useRef } from "react";
-import { addUser } from "@/lib/api";
+import { useAddUser } from "@/hooks/use-users";
 import { toast } from "sonner";
 
 const formSchema = z.object({
@@ -36,18 +36,16 @@ const formSchema = z.object({
   }),
 });
 
-interface AddUserDialogProps {
-  onSuccess?: () => void;
-}
-
-export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
+export function AddUserDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [processingStep, setProcessingStep] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  const addUserMutation = useAddUser();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,20 +56,14 @@ export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      setIsSubmitting(true);
-      await addUser({
+      await addUserMutation.mutateAsync({
         name: values.name,
         amount: Number(values.amount),
       });
-      toast.success("User added successfully");
       setIsOpen(false);
       form.reset();
-      onSuccess?.();
     } catch (error) {
-      toast.error("Failed to add user. Please try again.");
       console.error("Error adding user:", error);
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
@@ -155,7 +147,6 @@ export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
     if (!imagePreview) return;
 
     try {
-      setIsSubmitting(true);
       setProcessingStep("Converting image...");
 
       // Convert base64 to blob
@@ -199,7 +190,6 @@ export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
       setProcessingStep("Processing extracted data...");
       let extractedData;
       try {
-        // Try to parse the response as JSON if it's a string
         extractedData =
           typeof result.content === "string"
             ? JSON.parse(result.content)
@@ -220,7 +210,7 @@ export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
           typeof userData.name === "string" &&
           typeof userData.amount === "number"
         ) {
-          await addUser({
+          await addUserMutation.mutateAsync({
             name: userData.name,
             amount: userData.amount,
           });
@@ -230,14 +220,12 @@ export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
       toast.success(`Successfully added ${extractedData.length} users`);
       setIsOpen(false);
       setImagePreview(null);
-      onSuccess?.();
     } catch (error) {
       console.error("Error processing image:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to process image",
       );
     } finally {
-      setIsSubmitting(false);
       setProcessingStep("");
     }
   }
@@ -298,12 +286,8 @@ export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
                     </FormItem>
                   )}
                 />
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Adding..." : "Add User"}
+                <Button type="submit" className="w-full">
+                  Add User
                 </Button>
               </form>
             </Form>
@@ -341,12 +325,8 @@ export function AddUserDialog({ onSuccess }: AddUserDialogProps) {
                       className="object-cover w-full h-full"
                     />
                   </div>
-                  <Button
-                    className="w-full mt-4"
-                    onClick={handleProcessImage}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? processingStep : "Process Image"}
+                  <Button className="w-full mt-4" onClick={handleProcessImage}>
+                    {processingStep || "Process Image"}
                   </Button>
                 </div>
               ) : (
